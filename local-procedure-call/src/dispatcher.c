@@ -4,11 +4,16 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include "w_epoll.h"
 
 #define DISPATCHER_C ".dispatcher"
 #define PIPES_C ".pipes"
 #define INSTALL_PIPE_C ".dispatcher/install_req_pipe"
 #define CONNECT_PIPE_C ".dispatcher/connect_req_pipe"
+
+int static epollfd;
 
 int makePipe(const char *path, int mode)
 {
