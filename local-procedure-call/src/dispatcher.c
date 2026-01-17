@@ -19,6 +19,13 @@
 
 int static epollfd;
 
+typedef struct {
+    char Version[20];
+    char CallPipeName[200];
+    char ReturnPipeName[200];
+    char AccessPath[200];
+} ServiceDetails;
+
 int makePipe(const char *path, int mode)
 {
     int rc = 0;
@@ -35,6 +42,18 @@ void *execute(void *args) {
     fflush(stdout);
     w_epoll_update_fd_out(epollfd, fd);
     return NULL;
+}
+
+void handle_install(char *buf) {
+    
+    uint16_t numar = *(uint16_t*)buf;
+    numar = be16toh(numar);
+    char* text = (char*)(buf + 2);
+
+    printf("%d\n", numar);
+    printf("%s\n", text);
+    fflush(stdout);
+    
 }
 
 int main(void)
@@ -86,7 +105,8 @@ int main(void)
 			if (res.data.fd == installfd) {
                 char *buf = calloc(200, 1);
                 int size = read(installfd, buf, 200);
-                write(STDOUT_FILENO, buf, size);
+                handle_install(buf);
+                //write(STDOUT_FILENO, buf, size);
             }
 			if (res.data.fd == connectionfd) {
                 char *buf = calloc(200, 1);
