@@ -18,7 +18,6 @@
 #define DETACHED 1
 
 int static epollfd;
-pthread_t threads[POOL];
 
 int makePipe(const char *path, int mode)
 {
@@ -31,7 +30,11 @@ int makePipe(const char *path, int mode)
 }
 
 void *execute(void *args) {
-
+    int fd = *(int *)args;
+    printf("%d\n", fd);
+    fflush(stdout);
+    w_epoll_update_fd_out(epollfd, fd);
+    return NULL;
 }
 
 int main(void)
@@ -50,7 +53,6 @@ int main(void)
         perror("mkdir pipes");
     }
 
-    // Creare pipe pentru install
     ret = makePipe(INSTALL_PIPE_C, 0777);
     if (ret < 0)
     {
@@ -58,7 +60,7 @@ int main(void)
         exit(1);
     }
 
-    // Creare pipe pentru connect
+    //Creare pipe pentru connect
     ret = makePipe(CONNECT_PIPE_C, 0777);
     if (ret < 0)
     {
@@ -67,21 +69,30 @@ int main(void)
     }
 
 	epollfd = w_epoll_create();
-	int installfd = open(INSTALL_PIPE_C, O_RDONLY);
-	int connectionfd = open(CONNECT_PIPE_C, O_RDONLY);
+	int installfd = open(INSTALL_PIPE_C, O_RDONLY | O_NONBLOCK);
+	int connectionfd = open(CONNECT_PIPE_C, O_RDONLY | O_NONBLOCK);
 	w_epoll_add_fd_in(epollfd, installfd);
 	w_epoll_add_fd_in(epollfd, connectionfd);
 
     printf("Pipe-urile au fost create cu succes!\n");
+    fflush(stdout);
+
 
 	while(1) {
 		struct epoll_event res;
 		w_epoll_wait_infinite(epollfd, &res);
+
 		if (res.events & EPOLLIN) {
-			if (res.data.fd == installfd)
-				pthread_create(NULL, &attr, execute, NULL);
-			if (res.data.fd == connectionfd)
-				pthread_create(NULL, &attr, execute, NULL);
+			if (res.data.fd == installfd) {
+                char *buf = calloc(200, 1);
+                int size = read(installfd, buf, 200);
+                write(STDOUT_FILENO, buf, size);
+            }
+			if (res.data.fd == connectionfd) {
+                char *buf = calloc(200, 1);
+                int size = read(installfd, buf, 200);
+                write(STDOUT_FILENO, buf, size);
+            }
 		}
 	}
     return 0;
