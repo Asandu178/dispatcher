@@ -31,7 +31,7 @@ int makePipe(const char *path, int mode)
 }
 
 void *execute(void *args) {
-	
+
 }
 
 int main(void)
@@ -78,7 +78,10 @@ int main(void)
 		struct epoll_event res;
 		w_epoll_wait_infinite(epollfd, &res);
 		if (res.events & EPOLLIN) {
-			pthread_create(NULL, &attr, execute, NULL);
+			if (res.data.fd == installfd)
+				pthread_create(NULL, &attr, execute, NULL);
+			if (res.data.fd == connectionfd)
+				pthread_create(NULL, &attr, execute, NULL);
 		}
 	}
     return 0;
