@@ -12,7 +12,7 @@
 #define DISPATCHER_C ".dispatcher"
 #define PIPES_C ".pipes"
 #define INSTALL_PIPE_C ".dispatcher/install_req_pipe"
-#define CONNECT_PIPE_C ".dispatcher/connect_req_pipe"
+#define CONNECT_PIPE_C ".dispatcher/connection_req_pipe"
 #define BACKLOG 400
 #define POOL 40
 #define DETACHED 1
